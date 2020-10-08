@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, make_response
 from flask_mysqldb import MySQL
 import yaml
+import pdfkit
 
 app = Flask(__name__)
 
@@ -43,6 +44,15 @@ def users():
     if resultValue > 0:
         userDetails = cur.fetchall()
         return render_template('users.html',userDetails=userDetails)
+
+@app.route('/<name>/<location>')
+def print_current_user(name, location):
+    rendered = render_template("print_to_pdf.html", name=name, location=location)
+    pdf = pdfkit.from_string(rendered, False)
+    response = make_response(pdf)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'inline; filename=output.pdf'
+    return response
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=80)
